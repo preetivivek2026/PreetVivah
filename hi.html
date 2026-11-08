@@ -1816,7 +1816,7 @@
   }));
 
   // ---- Cheer stats: one pick per guest per card, counted for all guests in the RSVP sheet's "Cheers" tab ----
-  // Shown inside the two side buttons once this guest has tapped a side. Needs the updated apps-script/Code.gs deployed.
+  // Shown inside the two side buttons only after the guest taps a side on this visit. Needs the updated apps-script/Code.gs deployed.
   (() => {
     const HI = document.documentElement.lang === 'hi';
     const KEY = 'pv-cheers';
@@ -1824,10 +1824,11 @@
     const rows = [...document.querySelectorAll('.teams')];
     const name = b => [...b.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
     let counts = null, loading = null;
+    const tapped = new Set();   // cards tapped during this visit: only these show their percentages
     const show = () => rows.forEach(t => {
       const [a, b] = t.querySelectorAll('.team'), key = a.dataset.team;
       const na = counts ? counts[a.dataset.team] || 0 : 0, nb = counts ? counts[b.dataset.team] || 0 : 0, n = na + nb;
-      if (!picks[key] || !n) { a.querySelector('.tally').textContent = b.querySelector('.tally').textContent = ''; return; }
+      if (!tapped.has(key) || !picks[key] || !n) { a.querySelector('.tally').textContent = b.querySelector('.tally').textContent = ''; return; }
       const pa = Math.round(na * 100 / n);
       a.querySelector('.tally').textContent = pa + '%';          // the share of guests on each side, on the buttons themselves
       b.querySelector('.tally').textContent = (100 - pa) + '%';
@@ -1838,16 +1839,17 @@
     };
     rows.forEach(t => t.querySelectorAll('.team').forEach(btn => btn.addEventListener('click', () => {
       const key = t.querySelector('.team').dataset.team, team = btn.dataset.team;
+      tapped.add(key);
       // Sangeet: a guest may like both Style and Story, so each side counts once and nothing is taken back.
       // The other cards are either/or: switching sides moves the guest's one vote.
       const both = key === 'sparkle';
       let prev = picks[key];
       if (both) {
         const mine = Array.isArray(prev) ? prev : prev ? [prev] : [];
-        if (mine.includes(team)) { if (!counts) load(); return; }
+        if (mine.includes(team)) { if (counts) show(); else load(); return; }
         picks[key] = [...mine, team]; prev = '';
       } else {
-        if (prev === team) { if (!counts) load(); return; }
+        if (prev === team) { if (counts) show(); else load(); return; }
         picks[key] = team;
       }
       try { localStorage.setItem(KEY, JSON.stringify(picks)); } catch {}
@@ -1856,12 +1858,6 @@
       fetch(RSVP_SHEET_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ type: 'cheer', team, undo: prev || '' }) })
         .then(() => setTimeout(load, 300)).catch(() => {});
     })));
-    // A guest who already picked sees the current numbers when the wardrobe comes into view
-    const wardrobe = document.getElementById('wardrobe');
-    if (Object.keys(picks).length && wardrobe && 'IntersectionObserver' in window) {
-      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); load(); } });
-      io.observe(wardrobe);
-    }
   })();
 
   // Gold dust bursting out from the seal as the curtain opens
