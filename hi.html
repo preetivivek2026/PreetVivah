@@ -389,11 +389,6 @@
   .team--groom { --glow: #3b86c8aa; }
   .team--bride { --glow: #a77bd9aa; }
   @media (prefers-reduced-motion: reduce) { .team { animation: none; } }
-  /* Cheer stats under the side buttons: a split bar in the two team colours, then the percentages */
-  .cheer-stat { display: grid; gap: 4px; justify-items: center; width: min(260px, 100%); margin-top: 2px; font-size: .9rem; line-height: 1.3; }
-  .cheer-stat[hidden] { display: none; }
-  .cheer-bar { display: block; width: 100%; height: 7px; border-radius: 999px; box-shadow: 0 0 0 1px #ffffff80;
-    background: linear-gradient(90deg, var(--ca) var(--a), var(--cb) var(--a)); transition: background .4s; }
   .team .tally { font-size: .8rem; font-weight: 600; letter-spacing: .04em; opacity: 1; }   /* shows each side's share, e.g. 58% */
   .battle-copy { max-width: 34ch; line-height: 1.5; }
   .battle-copy em, .wcard--haldi .wc-copy em { color: #c2410c; font-weight: 600; font-style: normal; }
@@ -1821,7 +1816,7 @@
   }));
 
   // ---- Cheer stats: one pick per guest per card, counted for all guests in the RSVP sheet's "Cheers" tab ----
-  // Shown under a card's buttons once this guest has tapped a side. Needs the updated apps-script/Code.gs deployed.
+  // Shown inside the two side buttons once this guest has tapped a side. Needs the updated apps-script/Code.gs deployed.
   (() => {
     const HI = document.documentElement.lang === 'hi';
     const KEY = 'pv-cheers';
@@ -1829,31 +1824,37 @@
     const rows = [...document.querySelectorAll('.teams')];
     const name = b => [...b.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
     let counts = null, loading = null;
-    rows.forEach(t => { const p = document.createElement('p'); p.className = 'cheer-stat'; p.hidden = true; p.setAttribute('aria-live', 'polite'); t.after(p); });
     const show = () => rows.forEach(t => {
-      const [a, b] = t.querySelectorAll('.team'), p = t.nextElementSibling, key = a.dataset.team;
+      const [a, b] = t.querySelectorAll('.team'), key = a.dataset.team;
       const na = counts ? counts[a.dataset.team] || 0 : 0, nb = counts ? counts[b.dataset.team] || 0 : 0, n = na + nb;
-      if (!picks[key] || !n) { p.hidden = true; a.querySelector('.tally').textContent = b.querySelector('.tally').textContent = ''; return; }
+      if (!picks[key] || !n) { a.querySelector('.tally').textContent = b.querySelector('.tally').textContent = ''; return; }
       const pa = Math.round(na * 100 / n);
       a.querySelector('.tally').textContent = pa + '%';          // the share of guests on each side, on the buttons themselves
       b.querySelector('.tally').textContent = (100 - pa) + '%';
-      p.style.cssText = `--a:${pa}%;--ca:${TEAM[a.dataset.team][0]};--cb:${TEAM[b.dataset.team][0]}`;
-      p.innerHTML = `<span class="cheer-bar"></span><span>${name(a)} ${pa}% · ${100 - pa}% ${name(b)}</span>`;
-      p.hidden = false;
     });
     const load = () => {
       if (!RSVP_SHEET_URL) return Promise.resolve();
       return loading = loading || fetch(RSVP_SHEET_URL + '?action=cheers').then(r => r.json()).then(c => { if (c && typeof c === 'object') counts = c; show(); }).catch(() => {}).finally(() => { loading = null; });
     };
     rows.forEach(t => t.querySelectorAll('.team').forEach(btn => btn.addEventListener('click', () => {
-      const key = t.querySelector('.team').dataset.team, team = btn.dataset.team, prev = picks[key];
-      if (prev === team) { if (!counts) load(); return; }
-      picks[key] = team;
+      const key = t.querySelector('.team').dataset.team, team = btn.dataset.team;
+      // Sangeet: a guest may like both Style and Story, so each side counts once and nothing is taken back.
+      // The other cards are either/or: switching sides moves the guest's one vote.
+      const both = key === 'sparkle';
+      let prev = picks[key];
+      if (both) {
+        const mine = Array.isArray(prev) ? prev : prev ? [prev] : [];
+        if (mine.includes(team)) { if (!counts) load(); return; }
+        picks[key] = [...mine, team]; prev = '';
+      } else {
+        if (prev === team) { if (!counts) load(); return; }
+        picks[key] = team;
+      }
       try { localStorage.setItem(KEY, JSON.stringify(picks)); } catch {}
       if (counts) { counts[team] = (counts[team] || 0) + 1; if (prev) counts[prev] = Math.max(0, (counts[prev] || 0) - 1); show(); }
       if (!RSVP_SHEET_URL) return;
       fetch(RSVP_SHEET_URL, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ type: 'cheer', team, undo: prev || '' }) })
-        .then(() => setTimeout(load, 2500)).catch(() => {});
+        .then(() => setTimeout(load, 300)).catch(() => {});
     })));
     // A guest who already picked sees the current numbers when the wardrobe comes into view
     const wardrobe = document.getElementById('wardrobe');
