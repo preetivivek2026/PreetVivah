@@ -1017,6 +1017,8 @@
   .it-corner--tl { top: -4px; left: -4px; width: 28%; }
   .it-corner--br { bottom: -4px; right: -4px; width: 28%; }
   #itinerary .section-head, .it { position: relative; z-index: 1; }
+  .closing { overflow: hidden; padding-bottom: clamp(110px, 30vw, 150px); }   /* same corner flowers as the itinerary; room below the sign-off for the bottom bouquet */
+  .closing > :not(.it-corner) { position: relative; z-index: 1; }
   #itinerary .section-head { margin-bottom: 26px; }
   #itinerary .script-title { font-family: var(--font-display); font-weight: 500; letter-spacing: .08em; color: #8a5a2b; background: none; -webkit-text-fill-color: currentColor; }
   .it-hearts { width: 58px; }
@@ -1460,6 +1462,8 @@
 
     <!-- Shaurya's invitation and family sign-off (sits just above the RSVP) -->
     <section class="closing">
+      <img class="it-corner it-corner--tl" src="images/corner-clear.webp" alt="">
+      <img class="it-corner it-corner--br" src="images/corner-clear.webp" alt="">
       <figure class="shaurya reveal">
         <img src="images/closing-shaurya.webp" alt="हरे टेडी-बियर कपड़ों में मुस्कुराता नन्हा शौर्य" loading="lazy">
         <figcaption>
