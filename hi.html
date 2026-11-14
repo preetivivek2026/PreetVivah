@@ -1017,8 +1017,6 @@
   .it-corner--tl { top: -4px; left: -4px; width: 28%; }
   .it-corner--br { bottom: -4px; right: -4px; width: 28%; }
   #itinerary .section-head, .it { position: relative; z-index: 1; }
-  .closing { overflow: hidden; padding-bottom: clamp(110px, 30vw, 150px); }   /* same corner flowers as the itinerary; room below the sign-off for the bottom bouquet */
-  .closing > :not(.it-corner) { position: relative; z-index: 1; }
   #itinerary .section-head { margin-bottom: 26px; }
   #itinerary .script-title { font-family: var(--font-display); font-weight: 500; letter-spacing: .08em; color: #8a5a2b; background: none; -webkit-text-fill-color: currentColor; }
   .it-hearts { width: 58px; }
@@ -1309,8 +1307,6 @@
 
     <!-- Itinerary -->
     <section id="itinerary">
-      <img class="it-corner it-corner--tl" src="images/corner-clear.webp" alt="">
-      <img class="it-corner it-corner--br" src="images/corner-clear.webp" alt="">
       <div class="section-head reveal">
         <p class="kicker">दो दिन का उत्सव</p>
         <h2 class="script-title">कार्यक्रम विवरण</h2>
@@ -1462,8 +1458,6 @@
 
     <!-- Shaurya's invitation and family sign-off (sits just above the RSVP) -->
     <section class="closing">
-      <img class="it-corner it-corner--tl" src="images/corner-clear.webp" alt="">
-      <img class="it-corner it-corner--br" src="images/corner-clear.webp" alt="">
       <figure class="shaurya reveal">
         <img src="images/closing-shaurya.webp" alt="हरे टेडी-बियर कपड़ों में मुस्कुराता नन्हा शौर्य" loading="lazy">
         <figcaption>
@@ -1647,6 +1641,17 @@
     $('seal-dear').hidden = false;
     $('dear').textContent = 'प्रिय ' + guest + ',';
     $('dear').hidden = false;
+  }
+  // Vivek's friends' links carry &side=vivek: the closing invitation then comes from Kanish instead of Shaurya
+  const rawSide = params.get('side') || qs.get('side') || '';
+  if (link) store.set('side', rawSide === 'vivek' ? 'vivek' : '');
+  if ((link ? rawSide : store.get('side')) === 'vivek') {
+    const fig = document.querySelector('.shaurya');
+    fig.querySelector('img').src = 'images/closing-kanish.webp';
+    fig.querySelector('img').alt = 'तारों भरे आसमान में ऊपर उठाया गया नन्हा कनिश';
+    fig.querySelector('.shaurya-hi').innerHTML = 'मेरे मामा की शादी में<br>जलूल-जलूल आना!';
+    
+    fig.querySelector('.shaurya-sign').textContent = '– कनिश';
   }
   const langLink = $('lang-toggle');   // switch language, keeping the current section or guest link
   const syncLang = () => { langLink.href = (document.documentElement.lang === 'hi' ? './' : 'hi.html') + location.hash; };

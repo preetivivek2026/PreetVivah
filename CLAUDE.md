@@ -46,6 +46,7 @@ Also: `#petals` canvas animation and the `#music-btn` toggle (plays `MUSIC_SRC`,
 ## Behaviour worth knowing
 
 - Personal greeting: `#guestName=Piya-and-Family` (or `?guestName=…`; old `#for-…` links still work) in the URL becomes "Dear Piya & Family" (`nameToSlug` / `slugToName`), remembered in `sessionStorage`. The raw `guestName` is also saved to the sheet's `guestName` column with the RSVP date & time. `#host` shows the link maker.
+- `&side=vivek` in a guest link (used by Vivek's friends' `g/` short links) swaps the closing Shaurya invitation for Kanish (`images/closing-kanish.webp`, "मेरे मामा की शादी में जलूल-जलूल आना!"); remembered in `sessionStorage` with the guest name. Links without it show Shaurya.
 - The last RSVP is saved in browser storage and restored on reload; all storage access is wrapped in try/catch.
 - `prefers-reduced-motion` is respected in both CSS and JS (`reduce`). Keep it that way for new animations.
 - The page was originally a claude.ai Artifact, so line 1 carries an injected doctype/head/`<style>` skeleton before the real `<title>`. Leave it alone unless cleaning up the head on purpose.
