@@ -19,8 +19,9 @@ Wedding invitation website for Preeti & Vivek (Dec 20–21, 2026, Treasure Islan
 4. `#itinerary`: two-day schedule (times shown in cornflower).
 5. `#wardrobe`: dress code per event (Haldi, Sangeet, Wedding).
 6. `#quiz`: couple quiz, driven by the `QUIZ` array in the script.
-7. `#rsvp`: form, then a confirmation panel that composes a WhatsApp message.
-8. `.closing`, plus the hidden `#host` link maker.
+7. `.closing`: baby Shaurya's "jalul-jalul aana" invitation and the family sign-off (moved above the RSVP on purpose).
+8. `#rsvp`: form, then a confirmation panel that composes a WhatsApp message. On `hi.html` the families list follows it.
+9. The hidden `#host` link maker.
 
 Also: `#petals` canvas animation and the `#music-btn` toggle (plays `MUSIC_SRC`, or a synthesized Web Audio piano if empty).
 
